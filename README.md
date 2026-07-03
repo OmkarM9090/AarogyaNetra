@@ -103,8 +103,6 @@ src/
 └── theme/             # Colors, typography, spacing
 ```
 
-## 👥 Team
-**Tech-Tantra** — MIT-ADT AI Grand Challenge 2026
 
 ## ⚠️ Disclaimer
 AarogyaNetra is a **screening tool** for early risk detection. It does not provide medical diagnoses. Always consult a qualified healthcare provider for medical decisions.

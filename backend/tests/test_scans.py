@@ -98,7 +98,9 @@ async def test_diabetes_validation_errors(client, auth_headers, sample_diabetes_
     assert res.status_code == 422
     body = res.json()
     assert body["error"]["code"] == "validation_error"
-    assert body["error"]["details"]["fieldErrors"], "field errors should be listed"
+    # details is a flat {field: message} map the mobile client reads directly
+    assert body["error"]["details"], "field errors should be listed"
+    assert all(isinstance(v, str) for v in body["error"]["details"].values())
 
 
 async def test_scan_requires_auth(client, sample_diabetes_input):

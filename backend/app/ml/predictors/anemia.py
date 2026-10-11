@@ -30,7 +30,9 @@ INPUT_SIZE = 224
 _IMAGENET_MEAN = np.array([123.68, 116.78, 103.94], dtype=np.float32)
 
 # Hb (g/dL) severity cutoffs used when the head is a regression.
-HB_CUTOFFS = [(13.5, "normal"), (12.0, "mild"), (10.0, "moderate"), (6.5, "severe")]
+# (mild 10-12, moderate 8-10, severe < 8 — standard adult thresholds,
+# midpoint 12.5 g/dL between typical male/female lower normals)
+HB_CUTOFFS = [(12.5, "normal"), (10.0, "mild"), (8.0, "moderate")]
 SEVERITY_ORDER = ["normal", "mild", "moderate", "severe"]
 
 

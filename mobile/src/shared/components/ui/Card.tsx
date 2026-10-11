@@ -1,8 +1,11 @@
 /**
  * Card — tonal-layered surface (no borders, soft ambient shadow).
+ *
+ * Primitive (string/number) children are wrapped in <Text> defensively —
+ * RN crashes when a string lands directly inside a <View>.
  */
 import React from 'react';
-import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
 
 import { Colors, Spacing } from '../../theme';
 
@@ -14,6 +17,8 @@ interface CardProps {
 }
 
 export const Card: React.FC<CardProps> = ({ children, style, variant = 'default', padding }) => {
+  const content =
+    typeof children === 'string' || typeof children === 'number' ? <Text>{children}</Text> : children;
   const variantStyles: Record<string, ViewStyle> = {
     default: {
       backgroundColor: Colors.surfaceContainerLow,
@@ -40,7 +45,7 @@ export const Card: React.FC<CardProps> = ({ children, style, variant = 'default'
         style,
       ]}
     >
-      {children}
+      {content}
     </View>
   );
 };

@@ -10,6 +10,7 @@ Run locally:
 from __future__ import annotations
 
 import logging
+import re
 import time
 import uuid
 
@@ -103,14 +104,18 @@ def create_app() -> FastAPI:
 
     @app.exception_handler(RequestValidationError)
     async def validation_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+        # details is a flat {field: message} map — the mobile client reads it
+        # directly as fieldErrors.
         field_errors: dict[str, str] = {}
         for e in exc.errors():
-            loc = [str(part) for part in e.get("loc", []) if part != "body"]
+            loc = [str(part) for part in e.get("loc", []) if part not in ("body", "query")]
             key = ".".join(loc) if loc else "body"
-            field_errors[key] = str(e.get("msg", "invalid"))
+            msg = str(e.get("msg", "invalid"))
+            msg = re.sub(r"^Value error,\s*", "", msg)
+            field_errors[key] = msg
         return JSONResponse(
             status_code=422,
-            content=error(ERR_VALIDATION, "Validation failed.", {"fieldErrors": field_errors}),
+            content=error(ERR_VALIDATION, "Validation failed.", field_errors),
         )
 
     @app.exception_handler(Exception)

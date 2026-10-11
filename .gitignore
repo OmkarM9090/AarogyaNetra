@@ -73,3 +73,14 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Python / backend
+__pycache__/
+*.pyc
+.pytest_cache/
+htmlcov/
+.coverage
+backend/.env
+
+# Mobile env (local overrides only; committed .env.development/.env.production are defaults)
+mobile/.env.local

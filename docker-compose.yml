@@ -1,0 +1,71 @@
+# AarogyaNetra — local development stack.
+#
+#   docker compose up -d
+#
+#   - MongoDB 7        → http://localhost:27017
+#   - FastAPI backend  → http://localhost:8000  (docs at /docs when DEBUG=true)
+#   - Mongo Express    → http://localhost:8081  (optional, disabled by default)
+services:
+  mongo:
+    image: mongo:7
+    container_name: aarogyanetra-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aarogyanetra-backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: aarogya_netra
+      MONGO_CONNECT_RETRIES: "3"
+      MONGO_RETRY_DELAY_SECONDS: "2.0"
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production-0123456789abcdef0123456789abcdef}
+      CORS_ORIGINS: '["*"]'
+      DEBUG: "false"
+      API_V1_PREFIX: /api/v1
+      PREDICTIONS_RATE_LIMIT_PER_MINUTE: "100"
+      MODEL_DIR: /app/ml_models
+      MAX_UPLOAD_MB: "10"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 90s
+
+  mongo-express:
+    image: mongo-express:1
+    container_name: aarogyanetra-mongo-express
+    profiles: ["tools"]
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_MONGODB_PORT: "27017"
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-admin}
+    ports:
+      - "8081:8081"
+
+volumes:
+  mongo_data:
